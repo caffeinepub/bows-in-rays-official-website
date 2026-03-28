@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Toaster } from "@/components/ui/sonner";
 import {
   ChevronRight,
@@ -9,17 +10,28 @@ import {
   ExternalLink,
   Gamepad2,
   Menu,
+  Search,
   Sword,
   Trophy,
   X,
   Zap,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
 type Game = { name: string; url?: string };
+type SportsGame = { name: string; url: string };
+
+const romsfunBase: Record<string, string> = {
+  ps1: "https://romsfun.com/roms/playstation",
+  ps2: "https://romsfun.com/roms/playstation-2",
+  psp: "https://romsfun.com/roms/psp",
+  dreamcast: "https://romsfun.com/roms/dreamcast",
+  switch: "https://romsfun.com/roms/nintendo-switch",
+  gamecube: "https://romsfun.com/roms/gamecube",
+};
 
 const consoleLibraries: {
   id: string;
@@ -38,31 +50,31 @@ const consoleLibraries: {
     games: [
       {
         name: "FIFA 2001",
-        url: "https://archive.org/search?query=FIFA+2001+PS1",
+        url: "https://romsfun.com/roms/playstation/fifa-2001.html",
       },
       {
         name: "WWE SmackDown! (SmackDown 1)",
-        url: "https://archive.org/search?query=WWF+SmackDown+PS1",
+        url: "https://romsfun.com/roms/playstation/wwf-smackdown.html",
       },
       {
         name: "WWE SmackDown! 2: Know Your Role",
-        url: "https://archive.org/search?query=WWF+SmackDown+2+Know+Your+Role+PS1",
+        url: "https://romsfun.com/roms/playstation/wwf-smackdown-2-know-your-role.html",
       },
       {
         name: "Brian Lara Cricket",
-        url: "https://archive.org/search?query=Brian+Lara+Cricket+PS1",
+        url: "https://romsfun.com/roms/playstation/brian-lara-cricket.html",
       },
       {
         name: "ISS Pro Evolution",
-        url: "https://archive.org/search?query=ISS+Pro+Evolution+PS1",
+        url: "https://romsfun.com/roms/playstation/iss-pro-evolution.html",
       },
       {
         name: "WCW/nWo Thunder",
-        url: "https://archive.org/search?query=WCW+nWo+Thunder+PS1",
+        url: "https://romsfun.com/roms/playstation/wcw-nwo-thunder.html",
       },
       {
         name: "WWE Attitude",
-        url: "https://archive.org/search?query=WWF+Attitude+PS1",
+        url: "https://romsfun.com/roms/playstation/wwf-attitude.html",
       },
     ],
   },
@@ -76,108 +88,123 @@ const consoleLibraries: {
       // FIFA Series
       {
         name: "FIFA Football 2001",
-        url: "https://archive.org/search?query=FIFA+Football+2001+PS2",
+        url: "https://romsfun.com/roms/playstation-2/fifa-football-2001.html",
       },
       {
         name: "FIFA Football 2002",
-        url: "https://archive.org/search?query=FIFA+Football+2002+PS2",
+        url: "https://romsfun.com/roms/playstation-2/fifa-football-2002.html",
       },
       {
         name: "FIFA Football 2003",
-        url: "https://archive.org/search?query=FIFA+Football+2003+PS2",
+        url: "https://romsfun.com/roms/playstation-2/fifa-football-2003.html",
       },
       {
         name: "FIFA Football 2004",
-        url: "https://archive.org/search?query=FIFA+Football+2004+PS2",
+        url: "https://romsfun.com/roms/playstation-2/fifa-football-2004.html",
       },
       {
         name: "FIFA Football 2005",
-        url: "https://archive.org/search?query=FIFA+Football+2005+PS2",
+        url: "https://romsfun.com/roms/playstation-2/fifa-football-2005.html",
       },
-      { name: "FIFA 06", url: "https://archive.org/search?query=FIFA+06+PS2" },
-      { name: "FIFA 07", url: "https://archive.org/search?query=FIFA+07+PS2" },
-      { name: "FIFA 08", url: "https://archive.org/search?query=FIFA+08+PS2" },
-      { name: "FIFA 09", url: "https://archive.org/search?query=FIFA+09+PS2" },
-      { name: "FIFA 10", url: "https://archive.org/search?query=FIFA+10+PS2" },
+      {
+        name: "FIFA 06",
+        url: "https://romsfun.com/roms/playstation-2/fifa-06.html",
+      },
+      {
+        name: "FIFA 07",
+        url: "https://romsfun.com/roms/playstation-2/fifa-07.html",
+      },
+      {
+        name: "FIFA 08",
+        url: "https://romsfun.com/roms/playstation-2/fifa-08.html",
+      },
+      {
+        name: "FIFA 09",
+        url: "https://romsfun.com/roms/playstation-2/fifa-09.html",
+      },
+      {
+        name: "FIFA 10",
+        url: "https://romsfun.com/roms/playstation-2/fifa-10.html",
+      },
       {
         name: "FIFA Street",
-        url: "https://archive.org/search?query=FIFA+Street+PS2",
+        url: "https://romsfun.com/roms/playstation-2/fifa-street.html",
       },
       {
         name: "FIFA Street 2",
-        url: "https://archive.org/search?query=FIFA+Street+2+PS2",
+        url: "https://romsfun.com/roms/playstation-2/fifa-street-2.html",
       },
       {
         name: "FIFA Street 3",
-        url: "https://archive.org/search?query=FIFA+Street+3+PS2",
+        url: "https://romsfun.com/roms/playstation-2/fifa-street-3.html",
       },
       // FIFA World Cup Series
       {
         name: "2002 FIFA World Cup",
-        url: "https://archive.org/search?query=2002+FIFA+World+Cup+PS2",
+        url: "https://romsfun.com/roms/playstation-2/2002-fifa-world-cup.html",
       },
       {
         name: "2006 FIFA World Cup Germany",
-        url: "https://archive.org/search?query=2006+FIFA+World+Cup+Germany+PS2",
+        url: "https://romsfun.com/roms/playstation-2/2006-fifa-world-cup-germany.html",
       },
       {
         name: "2010 FIFA World Cup South Africa",
-        url: "https://archive.org/search?query=2010+FIFA+World+Cup+South+Africa+PS2",
+        url: "https://romsfun.com/roms/playstation-2/2010-fifa-world-cup-south-africa.html",
       },
       // Pro Evolution Soccer Series
       {
         name: "Pro Evolution Soccer (PES 1)",
-        url: "https://archive.org/search?query=Pro+Evolution+Soccer+1+PS2",
+        url: "https://romsfun.com/roms/playstation-2/pro-evolution-soccer.html",
       },
       {
         name: "Pro Evolution Soccer 2 (PES 2)",
-        url: "https://archive.org/search?query=Pro+Evolution+Soccer+2+PS2",
+        url: "https://romsfun.com/roms/playstation-2/pro-evolution-soccer-2.html",
       },
       {
         name: "Pro Evolution Soccer 3 (PES 3)",
-        url: "https://archive.org/search?query=Pro+Evolution+Soccer+3+PS2",
+        url: "https://romsfun.com/roms/playstation-2/pro-evolution-soccer-3.html",
       },
       {
         name: "Pro Evolution Soccer 4 (PES 4)",
-        url: "https://archive.org/search?query=Pro+Evolution+Soccer+4+PS2",
+        url: "https://romsfun.com/roms/playstation-2/pro-evolution-soccer-4.html",
       },
       {
         name: "Pro Evolution Soccer 5 (PES 5)",
-        url: "https://archive.org/search?query=Pro+Evolution+Soccer+5+PS2",
+        url: "https://romsfun.com/roms/playstation-2/pro-evolution-soccer-5.html",
       },
       {
         name: "Pro Evolution Soccer 6 (PES 6)",
-        url: "https://archive.org/search?query=Pro+Evolution+Soccer+6+PS2",
+        url: "https://romsfun.com/roms/playstation-2/pro-evolution-soccer-6.html",
       },
       {
         name: "PES 2008",
-        url: "https://archive.org/search?query=PES+2008+Pro+Evolution+Soccer+PS2",
+        url: "https://romsfun.com/roms/playstation-2/pro-evolution-soccer-2008.html",
       },
       {
         name: "PES 2009",
-        url: "https://archive.org/search?query=PES+2009+Pro+Evolution+Soccer+PS2",
+        url: "https://romsfun.com/roms/playstation-2/pro-evolution-soccer-2009.html",
       },
       {
         name: "PES 2010",
-        url: "https://archive.org/search?query=PES+2010+Pro+Evolution+Soccer+PS2",
+        url: "https://romsfun.com/roms/playstation-2/pro-evolution-soccer-2010.html",
       },
       // WWE
       {
         name: "WWE SmackDown vs Raw 2006",
-        url: "https://archive.org/search?query=WWE+SmackDown+vs+Raw+2006+PS2",
+        url: "https://romsfun.com/roms/playstation-2/wwe-smackdown-vs-raw-2006.html",
       },
       {
         name: "WWE SmackDown! Here Comes the Pain",
-        url: "https://archive.org/search?query=WWE+SmackDown+Here+Comes+the+Pain+PS2",
+        url: "https://romsfun.com/roms/playstation-2/wwe-smackdown-here-comes-the-pain.html",
       },
       // Cricket
       {
         name: "Brian Lara International Cricket 2005",
-        url: "https://archive.org/search?query=Brian+Lara+International+Cricket+2005+PS2",
+        url: "https://romsfun.com/roms/playstation-2/brian-lara-international-cricket-2005.html",
       },
       {
         name: "EA Cricket 2005",
-        url: "https://archive.org/search?query=EA+Cricket+2005+PS2",
+        url: "https://romsfun.com/roms/playstation-2/ea-cricket-2005.html",
       },
     ],
   },
@@ -191,84 +218,111 @@ const consoleLibraries: {
       // FIFA Series
       {
         name: "FIFA Football (PSP Launch)",
-        url: "https://archive.org/search?query=FIFA+Football+PSP+2005",
+        url: "https://romsfun.com/roms/psp/fifa-football.html",
       },
-      { name: "FIFA 06", url: "https://archive.org/search?query=FIFA+06+PSP" },
-      { name: "FIFA 07", url: "https://archive.org/search?query=FIFA+07+PSP" },
-      { name: "FIFA 08", url: "https://archive.org/search?query=FIFA+08+PSP" },
-      { name: "FIFA 09", url: "https://archive.org/search?query=FIFA+09+PSP" },
-      { name: "FIFA 10", url: "https://archive.org/search?query=FIFA+10+PSP" },
-      { name: "FIFA 11", url: "https://archive.org/search?query=FIFA+11+PSP" },
-      { name: "FIFA 12", url: "https://archive.org/search?query=FIFA+12+PSP" },
-      { name: "FIFA 13", url: "https://archive.org/search?query=FIFA+13+PSP" },
-      { name: "FIFA 14", url: "https://archive.org/search?query=FIFA+14+PSP" },
+      {
+        name: "FIFA 06",
+        url: "https://romsfun.com/roms/psp/fifa-06.html",
+      },
+      {
+        name: "FIFA 07",
+        url: "https://romsfun.com/roms/psp/fifa-07.html",
+      },
+      {
+        name: "FIFA 08",
+        url: "https://romsfun.com/roms/psp/fifa-08.html",
+      },
+      {
+        name: "FIFA 09",
+        url: "https://romsfun.com/roms/psp/fifa-09.html",
+      },
+      {
+        name: "FIFA 10",
+        url: "https://romsfun.com/roms/psp/fifa-10.html",
+      },
+      {
+        name: "FIFA 11",
+        url: "https://romsfun.com/roms/psp/fifa-11.html",
+      },
+      {
+        name: "FIFA 12",
+        url: "https://romsfun.com/roms/psp/fifa-12.html",
+      },
+      {
+        name: "FIFA 13",
+        url: "https://romsfun.com/roms/psp/fifa-13.html",
+      },
+      {
+        name: "FIFA 14",
+        url: "https://romsfun.com/roms/psp/fifa-14.html",
+      },
       // FIFA World Cup Series
       {
         name: "2006 FIFA World Cup Germany",
-        url: "https://archive.org/search?query=2006+FIFA+World+Cup+Germany+PSP",
+        url: "https://romsfun.com/roms/psp/2006-fifa-world-cup-germany.html",
       },
       {
         name: "2010 FIFA World Cup South Africa",
-        url: "https://archive.org/search?query=2010+FIFA+World+Cup+South+Africa+PSP",
+        url: "https://romsfun.com/roms/psp/2010-fifa-world-cup-south-africa.html",
       },
       {
         name: "2014 FIFA World Cup Brazil",
-        url: "https://archive.org/search?query=2014+FIFA+World+Cup+Brazil+PSP",
+        url: "https://romsfun.com/roms/psp/2014-fifa-world-cup-brazil.html",
       },
       // Pro Evolution Soccer Series
       {
         name: "Pro Evolution Soccer (PES 5)",
-        url: "https://archive.org/search?query=Pro+Evolution+Soccer+5+PSP",
+        url: "https://romsfun.com/roms/psp/pro-evolution-soccer-5.html",
       },
       {
         name: "Pro Evolution Soccer 6",
-        url: "https://archive.org/search?query=Pro+Evolution+Soccer+6+PSP",
+        url: "https://romsfun.com/roms/psp/pro-evolution-soccer-6.html",
       },
       {
         name: "PES 2008",
-        url: "https://archive.org/search?query=PES+2008+Pro+Evolution+Soccer+PSP",
+        url: "https://romsfun.com/roms/psp/pro-evolution-soccer-2008.html",
       },
       {
         name: "PES 2009",
-        url: "https://archive.org/search?query=PES+2009+Pro+Evolution+Soccer+PSP",
+        url: "https://romsfun.com/roms/psp/pro-evolution-soccer-2009.html",
       },
       {
         name: "PES 2010",
-        url: "https://archive.org/search?query=PES+2010+Pro+Evolution+Soccer+PSP",
+        url: "https://romsfun.com/roms/psp/pro-evolution-soccer-2010.html",
       },
       {
         name: "PES 2011",
-        url: "https://archive.org/search?query=PES+2011+Pro+Evolution+Soccer+PSP",
+        url: "https://romsfun.com/roms/psp/pro-evolution-soccer-2011.html",
       },
       {
         name: "PES 2012",
-        url: "https://archive.org/search?query=PES+2012+Pro+Evolution+Soccer+PSP",
+        url: "https://romsfun.com/roms/psp/pro-evolution-soccer-2012.html",
       },
       {
         name: "PES 2013",
-        url: "https://archive.org/search?query=PES+2013+Pro+Evolution+Soccer+PSP",
+        url: "https://romsfun.com/roms/psp/pro-evolution-soccer-2013.html",
       },
       {
         name: "PES 2014",
-        url: "https://archive.org/search?query=PES+2014+Pro+Evolution+Soccer+PSP",
+        url: "https://romsfun.com/roms/psp/pro-evolution-soccer-2014.html",
       },
       // WWE
       {
         name: "WWE SmackDown vs Raw 2011",
-        url: "https://archive.org/search?query=WWE+SmackDown+vs+Raw+2011+PSP",
+        url: "https://romsfun.com/roms/psp/wwe-smackdown-vs-raw-2011.html",
       },
       {
         name: "WWE SmackDown vs Raw 2009",
-        url: "https://archive.org/search?query=WWE+SmackDown+vs+Raw+2009+PSP",
+        url: "https://romsfun.com/roms/psp/wwe-smackdown-vs-raw-2009.html",
       },
       // Cricket
       {
         name: "ICC Cricket 2010",
-        url: "https://archive.org/search?query=ICC+Cricket+2010+PSP",
+        url: "https://romsfun.com/roms/psp/icc-cricket-2010.html",
       },
       {
         name: "Brian Lara International Cricket 2007",
-        url: "https://archive.org/search?query=Brian+Lara+International+Cricket+2007+PSP",
+        url: "https://romsfun.com/roms/psp/brian-lara-international-cricket-2007.html",
       },
     ],
   },
@@ -281,27 +335,27 @@ const consoleLibraries: {
     games: [
       {
         name: "FIFA 2001",
-        url: "https://archive.org/search?query=FIFA+2001+Dreamcast",
+        url: "https://romsfun.com/roms/dreamcast/fifa-2001.html",
       },
       {
         name: "WWF Royal Rumble",
-        url: "https://archive.org/search?query=WWF+Royal+Rumble+Dreamcast",
+        url: "https://romsfun.com/roms/dreamcast/wwf-royal-rumble.html",
       },
       {
         name: "NFL 2K2",
-        url: "https://archive.org/search?query=NFL+2K2+Dreamcast",
+        url: "https://romsfun.com/roms/dreamcast/nfl-2k2.html",
       },
       {
         name: "Ready 2 Rumble Boxing",
-        url: "https://archive.org/search?query=Ready+2+Rumble+Boxing+Dreamcast",
+        url: "https://romsfun.com/roms/dreamcast/ready-2-rumble-boxing.html",
       },
       {
         name: "Soul Calibur",
-        url: "https://archive.org/search?query=Soul+Calibur+Dreamcast",
+        url: "https://romsfun.com/roms/dreamcast/soul-calibur.html",
       },
       {
         name: "NBA 2K2",
-        url: "https://archive.org/search?query=NBA+2K2+Dreamcast",
+        url: "https://romsfun.com/roms/dreamcast/nba-2k2.html",
       },
     ],
   },
@@ -314,27 +368,27 @@ const consoleLibraries: {
     games: [
       {
         name: "FIFA 23",
-        url: "https://archive.org/search?query=FIFA+23+Nintendo+Switch",
+        url: "https://romsfun.com/roms/nintendo-switch/fifa-23.html",
       },
       {
         name: "WWE 2K22",
-        url: "https://archive.org/search?query=WWE+2K22+Nintendo+Switch",
+        url: "https://romsfun.com/roms/nintendo-switch/wwe-2k22.html",
       },
       {
         name: "Cricket 22",
-        url: "https://archive.org/search?query=Cricket+22+Nintendo+Switch",
+        url: "https://romsfun.com/roms/nintendo-switch/cricket-22.html",
       },
       {
         name: "Mario Kart 8 Deluxe",
-        url: "https://archive.org/search?query=Mario+Kart+8+Deluxe+Switch",
+        url: "https://romsfun.com/roms/nintendo-switch/mario-kart-8-deluxe.html",
       },
       {
         name: "The Legend of Zelda: BOTW",
-        url: "https://archive.org/search?query=Zelda+Breath+of+the+Wild+Switch",
+        url: "https://romsfun.com/roms/nintendo-switch/the-legend-of-zelda-breath-of-the-wild.html",
       },
       {
         name: "Super Smash Bros. Ultimate",
-        url: "https://archive.org/search?query=Super+Smash+Bros+Ultimate+Switch",
+        url: "https://romsfun.com/roms/nintendo-switch/super-smash-bros-ultimate.html",
       },
     ],
   },
@@ -347,44 +401,66 @@ const consoleLibraries: {
     games: [
       {
         name: "FIFA 2003",
-        url: "https://archive.org/search?query=FIFA+2003+GameCube",
+        url: "https://romsfun.com/roms/gamecube/fifa-2003.html",
       },
       {
         name: "WWE Day of Reckoning",
-        url: "https://archive.org/search?query=WWE+Day+of+Reckoning+GameCube",
+        url: "https://romsfun.com/roms/gamecube/wwe-day-of-reckoning.html",
       },
       {
         name: "Mario Kart: Double Dash!!",
-        url: "https://archive.org/search?query=Mario+Kart+Double+Dash+GameCube",
+        url: "https://romsfun.com/roms/gamecube/mario-kart-double-dash.html",
       },
       {
         name: "The Legend of Zelda: Wind Waker",
-        url: "https://archive.org/search?query=Zelda+Wind+Waker+GameCube",
+        url: "https://romsfun.com/roms/gamecube/the-legend-of-zelda-the-wind-waker.html",
       },
       {
         name: "Metroid Prime",
-        url: "https://archive.org/search?query=Metroid+Prime+GameCube",
+        url: "https://romsfun.com/roms/gamecube/metroid-prime.html",
       },
       {
         name: "Super Mario Sunshine",
-        url: "https://archive.org/search?query=Super+Mario+Sunshine+GameCube",
+        url: "https://romsfun.com/roms/gamecube/super-mario-sunshine.html",
       },
     ],
   },
 ];
 
-const sportsGames = [
+const sportsGames: {
+  id: string;
+  name: string;
+  icon: React.ElementType;
+  color: string;
+  games: SportsGame[];
+  searchQuery: string;
+}[] = [
   {
     id: "cricket",
     name: "Cricket Games",
     icon: Trophy,
     color: "#22C55E",
     games: [
-      "Brian Lara Cricket Series (PS1/PS2)",
-      "EA Cricket 2007",
-      "ICC Cricket 2010 (PSP)",
-      "Cricket 22 (Switch)",
-      "Don Bradman Cricket 17",
+      {
+        name: "Brian Lara Cricket Series (PS1/PS2)",
+        url: "https://romsfun.com/roms/playstation/brian-lara-cricket.html",
+      },
+      {
+        name: "EA Cricket 2007",
+        url: "https://romsfun.com/roms/playstation-2/ea-cricket-2007.html",
+      },
+      {
+        name: "ICC Cricket 2010 (PSP)",
+        url: "https://romsfun.com/roms/psp/icc-cricket-2010.html",
+      },
+      {
+        name: "Cricket 22 (Switch)",
+        url: "https://romsfun.com/roms/nintendo-switch/cricket-22.html",
+      },
+      {
+        name: "Don Bradman Cricket 17",
+        url: "https://romsfun.com/search/?q=don+bradman+cricket+17",
+      },
     ],
     searchQuery: "cricket video games",
   },
@@ -394,11 +470,26 @@ const sportsGames = [
     icon: Sword,
     color: "#3B82F6",
     games: [
-      "FIFA Series (All Consoles)",
-      "Pro Evolution Soccer Series",
-      "FIFA Street (PS2)",
-      "FIFA World Cup Series (PS2/PSP)",
-      "FIFA 23 (Switch)",
+      {
+        name: "FIFA Series (All Consoles)",
+        url: "https://romsfun.com/search/?q=fifa+football",
+      },
+      {
+        name: "Pro Evolution Soccer Series",
+        url: "https://romsfun.com/search/?q=pro+evolution+soccer",
+      },
+      {
+        name: "FIFA Street (PS2)",
+        url: "https://romsfun.com/roms/playstation-2/fifa-street.html",
+      },
+      {
+        name: "FIFA World Cup Series (PS2/PSP)",
+        url: "https://romsfun.com/search/?q=fifa+world+cup",
+      },
+      {
+        name: "FIFA 23 (Switch)",
+        url: "https://romsfun.com/roms/nintendo-switch/fifa-23.html",
+      },
     ],
     searchQuery: "FIFA football video games",
   },
@@ -408,11 +499,26 @@ const sportsGames = [
     icon: Dumbbell,
     color: "#EF4444",
     games: [
-      "WWE SmackDown! (PS1)",
-      "WWE SmackDown! 2: Know Your Role (PS1)",
-      "WWE SmackDown! Here Comes the Pain (PS2)",
-      "WWE SmackDown vs Raw Series (PS2/PSP)",
-      "WWE Day of Reckoning (GameCube)",
+      {
+        name: "WWE SmackDown! (PS1)",
+        url: "https://romsfun.com/roms/playstation/wwf-smackdown.html",
+      },
+      {
+        name: "WWE SmackDown! 2: Know Your Role (PS1)",
+        url: "https://romsfun.com/roms/playstation/wwf-smackdown-2-know-your-role.html",
+      },
+      {
+        name: "WWE SmackDown! Here Comes the Pain (PS2)",
+        url: "https://romsfun.com/roms/playstation-2/wwe-smackdown-here-comes-the-pain.html",
+      },
+      {
+        name: "WWE SmackDown vs Raw Series (PS2/PSP)",
+        url: "https://romsfun.com/search/?q=wwe+smackdown+vs+raw",
+      },
+      {
+        name: "WWE Day of Reckoning (GameCube)",
+        url: "https://romsfun.com/roms/gamecube/wwe-day-of-reckoning.html",
+      },
     ],
     searchQuery: "WWE wrestling video games",
   },
@@ -484,6 +590,15 @@ const navLinks = [
   { label: "ABOUT", href: "#about" },
 ];
 
+// ─── Search Types ─────────────────────────────────────────────────────────────
+
+type SearchResult = {
+  gameName: string;
+  gameUrl?: string;
+  category: string;
+  categoryColor: string;
+};
+
 // ─── Components ──────────────────────────────────────────────────────────────
 
 function Logo() {
@@ -502,13 +617,61 @@ function Logo() {
   );
 }
 
+function SearchBar({
+  value,
+  onChange,
+  className = "",
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  className?: string;
+}) {
+  return (
+    <div className={`relative ${className}`}>
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+      <Input
+        type="text"
+        placeholder="Search games..."
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="pl-9 pr-9 bg-background/80 border-border focus:border-primary font-display text-sm tracking-wide placeholder:text-muted-foreground/60 h-9"
+        data-ocid="search.input"
+      />
+      <AnimatePresence>
+        {value && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            transition={{ duration: 0.15 }}
+            type="button"
+            onClick={() => onChange("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Clear search"
+            data-ocid="search.close_button"
+          >
+            <X className="w-4 h-4" />
+          </motion.button>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 function Navbar({
   mobileOpen,
   setMobileOpen,
-}: { mobileOpen: boolean; setMobileOpen: (v: boolean) => void }) {
+  searchQuery,
+  setSearchQuery,
+}: {
+  mobileOpen: boolean;
+  setMobileOpen: (v: boolean) => void;
+  searchQuery: string;
+  setSearchQuery: (v: string) => void;
+}) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/95 backdrop-blur-md">
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16 gap-4">
         <Logo />
         {/* Desktop nav */}
         <ul className="hidden md:flex items-center gap-6">
@@ -524,6 +687,12 @@ function Navbar({
             </li>
           ))}
         </ul>
+        {/* Desktop search */}
+        <SearchBar
+          value={searchQuery}
+          onChange={setSearchQuery}
+          className="hidden md:block w-56"
+        />
         {/* Mobile toggle */}
         <button
           type="button"
@@ -549,6 +718,13 @@ function Navbar({
             transition={{ duration: 0.2 }}
             className="md:hidden border-t border-border bg-background overflow-hidden"
           >
+            <div className="px-4 pt-4">
+              <SearchBar
+                value={searchQuery}
+                onChange={setSearchQuery}
+                className="w-full"
+              />
+            </div>
             <ul className="flex flex-col px-4 py-4 gap-4">
               {navLinks.map((link) => (
                 <li key={link.href}>
@@ -566,6 +742,114 @@ function Navbar({
         )}
       </AnimatePresence>
     </header>
+  );
+}
+
+function SearchResultsSection({
+  query,
+  results,
+  onClear,
+}: {
+  query: string;
+  results: SearchResult[];
+  onClear: () => void;
+}) {
+  return (
+    <motion.section
+      key="search-results"
+      initial={{ opacity: 0, y: -12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -12 }}
+      transition={{ duration: 0.25 }}
+      className="pt-20 px-4 sm:px-6 lg:px-8 pb-6"
+      data-ocid="search.panel"
+    >
+      <div className="max-w-7xl mx-auto">
+        <div className="rounded-2xl border border-primary/30 bg-card/80 backdrop-blur-sm overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+            <div className="flex items-center gap-3">
+              <Search className="w-5 h-5 text-primary" />
+              <span className="font-display font-bold tracking-wider text-foreground">
+                Results for{" "}
+                <span className="text-primary">&ldquo;{query}&rdquo;</span>
+              </span>
+              <Badge className="bg-primary/20 text-primary border-primary/30 font-display text-xs">
+                {results.length} found
+              </Badge>
+            </div>
+            <button
+              type="button"
+              onClick={onClear}
+              className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-muted"
+              aria-label="Close search results"
+              data-ocid="search.close_button"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Results */}
+          {results.length === 0 ? (
+            <div
+              className="flex flex-col items-center justify-center py-16 text-center"
+              data-ocid="search.empty_state"
+            >
+              <Gamepad2 className="w-12 h-12 text-muted-foreground/40 mb-4" />
+              <p className="font-display font-bold text-lg text-muted-foreground tracking-wider">
+                No games found
+              </p>
+              <p className="text-sm text-muted-foreground/60 mt-1">
+                Try a different search term
+              </p>
+            </div>
+          ) : (
+            <ul className="divide-y divide-border max-h-[420px] overflow-y-auto">
+              {results.map((result, i) => (
+                <motion.li
+                  key={`${result.category}-${result.gameName}`}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2, delay: i * 0.03 }}
+                  className="flex items-center justify-between gap-4 px-6 py-3 hover:bg-muted/30 transition-colors"
+                  data-ocid={`search.item.${i + 1}`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <ChevronRight className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                    <span className="text-sm text-foreground truncate font-medium">
+                      {result.gameName}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <Badge
+                      className="font-display text-xs tracking-wider border"
+                      style={{
+                        backgroundColor: `${result.categoryColor}20`,
+                        color: result.categoryColor,
+                        borderColor: `${result.categoryColor}40`,
+                      }}
+                    >
+                      {result.category}
+                    </Badge>
+                    {result.gameUrl && (
+                      <a
+                        href={result.gameUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:text-primary/80 transition-colors"
+                        title={`Download ${result.gameName}`}
+                      >
+                        <Download className="w-4 h-4" />
+                      </a>
+                    )}
+                  </div>
+                </motion.li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
+    </motion.section>
   );
 }
 
@@ -788,12 +1072,12 @@ function ConsoleCard({
             data-ocid={`libraries.explore.button.${index + 1}`}
           >
             <a
-              href={`https://archive.org/search?query=${encodeURIComponent(`${lib.fullName} game ISO ROM`)}`}
+              href={romsfunBase[lib.id] ?? "https://romsfun.com"}
               target="_blank"
               rel="noopener noreferrer"
             >
               <Gamepad2 className="mr-2 w-3 h-3" />
-              Browse All on Archive.org
+              Browse All on Romsfun.com
             </a>
           </Button>
         </CardContent>
@@ -839,14 +1123,26 @@ function SportCard({
           <ul className="space-y-2 flex-1">
             {sport.games.map((game) => (
               <li
-                key={game}
-                className="flex items-center gap-2 text-sm text-muted-foreground"
+                key={game.name}
+                className="flex items-center justify-between gap-2 text-sm text-muted-foreground"
               >
-                <div
-                  className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: sport.color }}
-                />
-                <span>{game}</span>
+                <span className="flex items-center gap-2">
+                  <div
+                    className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: sport.color }}
+                  />
+                  <span>{game.name}</span>
+                </span>
+                <a
+                  href={game.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-shrink-0 hover:opacity-80 transition-opacity"
+                  title={`Download ${game.name}`}
+                  style={{ color: sport.color }}
+                >
+                  <Download className="w-3.5 h-3.5" />
+                </a>
               </li>
             ))}
           </ul>
@@ -948,12 +1244,68 @@ function EmulatorTile({
 
 export default function App() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const year = new Date().getFullYear();
+
+  const searchResults = useMemo<SearchResult[]>(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
+
+    const results: SearchResult[] = [];
+
+    // Search console libraries
+    for (const lib of consoleLibraries) {
+      for (const game of lib.games) {
+        if (game.name.toLowerCase().includes(q)) {
+          results.push({
+            gameName: game.name,
+            gameUrl: game.url,
+            category: lib.name,
+            categoryColor: lib.color,
+          });
+        }
+      }
+    }
+
+    // Search sports games
+    for (const sport of sportsGames) {
+      for (const game of sport.games) {
+        if (game.name.toLowerCase().includes(q)) {
+          results.push({
+            gameName: game.name,
+            gameUrl: game.url,
+            category: sport.name,
+            categoryColor: sport.color,
+          });
+        }
+      }
+    }
+
+    return results;
+  }, [searchQuery]);
+
+  const isSearchActive = searchQuery.trim().length > 0;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Toaster />
-      <Navbar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+      <Navbar
+        mobileOpen={mobileOpen}
+        setMobileOpen={setMobileOpen}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+      />
+
+      {/* Search Results */}
+      <AnimatePresence>
+        {isSearchActive && (
+          <SearchResultsSection
+            query={searchQuery}
+            results={searchResults}
+            onClear={() => setSearchQuery("")}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Hero */}
       <HeroSection />
