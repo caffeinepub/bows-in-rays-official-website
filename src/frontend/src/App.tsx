@@ -16,11 +16,19 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
-import { toast } from "sonner";
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
-const consoleLibraries = [
+type Game = { name: string; url?: string };
+
+const consoleLibraries: {
+  id: string;
+  name: string;
+  fullName: string;
+  color: string;
+  accent: string;
+  games: Game[];
+}[] = [
   {
     id: "ps1",
     name: "PS1",
@@ -28,12 +36,34 @@ const consoleLibraries = [
     color: "#3B82F6",
     accent: "blue",
     games: [
-      "FIFA 2001",
-      "WWF SmackDown!",
-      "Brian Lara Cricket",
-      "ISS Pro Evolution",
-      "WCW/nWo Thunder",
-      "WWE Attitude",
+      {
+        name: "FIFA 2001",
+        url: "https://archive.org/search?query=FIFA+2001+PS1",
+      },
+      {
+        name: "WWE SmackDown! (SmackDown 1)",
+        url: "https://archive.org/search?query=WWF+SmackDown+PS1",
+      },
+      {
+        name: "WWE SmackDown! 2: Know Your Role",
+        url: "https://archive.org/search?query=WWF+SmackDown+2+Know+Your+Role+PS1",
+      },
+      {
+        name: "Brian Lara Cricket",
+        url: "https://archive.org/search?query=Brian+Lara+Cricket+PS1",
+      },
+      {
+        name: "ISS Pro Evolution",
+        url: "https://archive.org/search?query=ISS+Pro+Evolution+PS1",
+      },
+      {
+        name: "WCW/nWo Thunder",
+        url: "https://archive.org/search?query=WCW+nWo+Thunder+PS1",
+      },
+      {
+        name: "WWE Attitude",
+        url: "https://archive.org/search?query=WWF+Attitude+PS1",
+      },
     ],
   },
   {
@@ -43,12 +73,112 @@ const consoleLibraries = [
     color: "#8B5CF6",
     accent: "purple",
     games: [
-      "FIFA Street",
-      "WWE SmackDown vs Raw 2006",
-      "Brian Lara International Cricket 2005",
-      "Pro Evolution Soccer 6",
-      "WWE SmackDown! Here Comes the Pain",
-      "EA Cricket 2005",
+      // FIFA Series
+      {
+        name: "FIFA Football 2001",
+        url: "https://archive.org/search?query=FIFA+Football+2001+PS2",
+      },
+      {
+        name: "FIFA Football 2002",
+        url: "https://archive.org/search?query=FIFA+Football+2002+PS2",
+      },
+      {
+        name: "FIFA Football 2003",
+        url: "https://archive.org/search?query=FIFA+Football+2003+PS2",
+      },
+      {
+        name: "FIFA Football 2004",
+        url: "https://archive.org/search?query=FIFA+Football+2004+PS2",
+      },
+      {
+        name: "FIFA Football 2005",
+        url: "https://archive.org/search?query=FIFA+Football+2005+PS2",
+      },
+      { name: "FIFA 06", url: "https://archive.org/search?query=FIFA+06+PS2" },
+      { name: "FIFA 07", url: "https://archive.org/search?query=FIFA+07+PS2" },
+      { name: "FIFA 08", url: "https://archive.org/search?query=FIFA+08+PS2" },
+      { name: "FIFA 09", url: "https://archive.org/search?query=FIFA+09+PS2" },
+      { name: "FIFA 10", url: "https://archive.org/search?query=FIFA+10+PS2" },
+      {
+        name: "FIFA Street",
+        url: "https://archive.org/search?query=FIFA+Street+PS2",
+      },
+      {
+        name: "FIFA Street 2",
+        url: "https://archive.org/search?query=FIFA+Street+2+PS2",
+      },
+      {
+        name: "FIFA Street 3",
+        url: "https://archive.org/search?query=FIFA+Street+3+PS2",
+      },
+      // FIFA World Cup Series
+      {
+        name: "2002 FIFA World Cup",
+        url: "https://archive.org/search?query=2002+FIFA+World+Cup+PS2",
+      },
+      {
+        name: "2006 FIFA World Cup Germany",
+        url: "https://archive.org/search?query=2006+FIFA+World+Cup+Germany+PS2",
+      },
+      {
+        name: "2010 FIFA World Cup South Africa",
+        url: "https://archive.org/search?query=2010+FIFA+World+Cup+South+Africa+PS2",
+      },
+      // Pro Evolution Soccer Series
+      {
+        name: "Pro Evolution Soccer (PES 1)",
+        url: "https://archive.org/search?query=Pro+Evolution+Soccer+1+PS2",
+      },
+      {
+        name: "Pro Evolution Soccer 2 (PES 2)",
+        url: "https://archive.org/search?query=Pro+Evolution+Soccer+2+PS2",
+      },
+      {
+        name: "Pro Evolution Soccer 3 (PES 3)",
+        url: "https://archive.org/search?query=Pro+Evolution+Soccer+3+PS2",
+      },
+      {
+        name: "Pro Evolution Soccer 4 (PES 4)",
+        url: "https://archive.org/search?query=Pro+Evolution+Soccer+4+PS2",
+      },
+      {
+        name: "Pro Evolution Soccer 5 (PES 5)",
+        url: "https://archive.org/search?query=Pro+Evolution+Soccer+5+PS2",
+      },
+      {
+        name: "Pro Evolution Soccer 6 (PES 6)",
+        url: "https://archive.org/search?query=Pro+Evolution+Soccer+6+PS2",
+      },
+      {
+        name: "PES 2008",
+        url: "https://archive.org/search?query=PES+2008+Pro+Evolution+Soccer+PS2",
+      },
+      {
+        name: "PES 2009",
+        url: "https://archive.org/search?query=PES+2009+Pro+Evolution+Soccer+PS2",
+      },
+      {
+        name: "PES 2010",
+        url: "https://archive.org/search?query=PES+2010+Pro+Evolution+Soccer+PS2",
+      },
+      // WWE
+      {
+        name: "WWE SmackDown vs Raw 2006",
+        url: "https://archive.org/search?query=WWE+SmackDown+vs+Raw+2006+PS2",
+      },
+      {
+        name: "WWE SmackDown! Here Comes the Pain",
+        url: "https://archive.org/search?query=WWE+SmackDown+Here+Comes+the+Pain+PS2",
+      },
+      // Cricket
+      {
+        name: "Brian Lara International Cricket 2005",
+        url: "https://archive.org/search?query=Brian+Lara+International+Cricket+2005+PS2",
+      },
+      {
+        name: "EA Cricket 2005",
+        url: "https://archive.org/search?query=EA+Cricket+2005+PS2",
+      },
     ],
   },
   {
@@ -58,12 +188,88 @@ const consoleLibraries = [
     color: "#10B981",
     accent: "green",
     games: [
-      "FIFA 10",
-      "WWE SmackDown vs Raw 2011",
-      "ICC Cricket 2010",
-      "Pro Evolution Soccer 2012",
-      "WWE SmackDown vs Raw 2009",
-      "Brian Lara International Cricket 2007",
+      // FIFA Series
+      {
+        name: "FIFA Football (PSP Launch)",
+        url: "https://archive.org/search?query=FIFA+Football+PSP+2005",
+      },
+      { name: "FIFA 06", url: "https://archive.org/search?query=FIFA+06+PSP" },
+      { name: "FIFA 07", url: "https://archive.org/search?query=FIFA+07+PSP" },
+      { name: "FIFA 08", url: "https://archive.org/search?query=FIFA+08+PSP" },
+      { name: "FIFA 09", url: "https://archive.org/search?query=FIFA+09+PSP" },
+      { name: "FIFA 10", url: "https://archive.org/search?query=FIFA+10+PSP" },
+      { name: "FIFA 11", url: "https://archive.org/search?query=FIFA+11+PSP" },
+      { name: "FIFA 12", url: "https://archive.org/search?query=FIFA+12+PSP" },
+      { name: "FIFA 13", url: "https://archive.org/search?query=FIFA+13+PSP" },
+      { name: "FIFA 14", url: "https://archive.org/search?query=FIFA+14+PSP" },
+      // FIFA World Cup Series
+      {
+        name: "2006 FIFA World Cup Germany",
+        url: "https://archive.org/search?query=2006+FIFA+World+Cup+Germany+PSP",
+      },
+      {
+        name: "2010 FIFA World Cup South Africa",
+        url: "https://archive.org/search?query=2010+FIFA+World+Cup+South+Africa+PSP",
+      },
+      {
+        name: "2014 FIFA World Cup Brazil",
+        url: "https://archive.org/search?query=2014+FIFA+World+Cup+Brazil+PSP",
+      },
+      // Pro Evolution Soccer Series
+      {
+        name: "Pro Evolution Soccer (PES 5)",
+        url: "https://archive.org/search?query=Pro+Evolution+Soccer+5+PSP",
+      },
+      {
+        name: "Pro Evolution Soccer 6",
+        url: "https://archive.org/search?query=Pro+Evolution+Soccer+6+PSP",
+      },
+      {
+        name: "PES 2008",
+        url: "https://archive.org/search?query=PES+2008+Pro+Evolution+Soccer+PSP",
+      },
+      {
+        name: "PES 2009",
+        url: "https://archive.org/search?query=PES+2009+Pro+Evolution+Soccer+PSP",
+      },
+      {
+        name: "PES 2010",
+        url: "https://archive.org/search?query=PES+2010+Pro+Evolution+Soccer+PSP",
+      },
+      {
+        name: "PES 2011",
+        url: "https://archive.org/search?query=PES+2011+Pro+Evolution+Soccer+PSP",
+      },
+      {
+        name: "PES 2012",
+        url: "https://archive.org/search?query=PES+2012+Pro+Evolution+Soccer+PSP",
+      },
+      {
+        name: "PES 2013",
+        url: "https://archive.org/search?query=PES+2013+Pro+Evolution+Soccer+PSP",
+      },
+      {
+        name: "PES 2014",
+        url: "https://archive.org/search?query=PES+2014+Pro+Evolution+Soccer+PSP",
+      },
+      // WWE
+      {
+        name: "WWE SmackDown vs Raw 2011",
+        url: "https://archive.org/search?query=WWE+SmackDown+vs+Raw+2011+PSP",
+      },
+      {
+        name: "WWE SmackDown vs Raw 2009",
+        url: "https://archive.org/search?query=WWE+SmackDown+vs+Raw+2009+PSP",
+      },
+      // Cricket
+      {
+        name: "ICC Cricket 2010",
+        url: "https://archive.org/search?query=ICC+Cricket+2010+PSP",
+      },
+      {
+        name: "Brian Lara International Cricket 2007",
+        url: "https://archive.org/search?query=Brian+Lara+International+Cricket+2007+PSP",
+      },
     ],
   },
   {
@@ -73,12 +279,30 @@ const consoleLibraries = [
     color: "#EF4444",
     accent: "red",
     games: [
-      "FIFA 2001",
-      "WWF Royal Rumble",
-      "NFL 2K2",
-      "Ready 2 Rumble Boxing",
-      "Soul Calibur",
-      "NBA 2K2",
+      {
+        name: "FIFA 2001",
+        url: "https://archive.org/search?query=FIFA+2001+Dreamcast",
+      },
+      {
+        name: "WWF Royal Rumble",
+        url: "https://archive.org/search?query=WWF+Royal+Rumble+Dreamcast",
+      },
+      {
+        name: "NFL 2K2",
+        url: "https://archive.org/search?query=NFL+2K2+Dreamcast",
+      },
+      {
+        name: "Ready 2 Rumble Boxing",
+        url: "https://archive.org/search?query=Ready+2+Rumble+Boxing+Dreamcast",
+      },
+      {
+        name: "Soul Calibur",
+        url: "https://archive.org/search?query=Soul+Calibur+Dreamcast",
+      },
+      {
+        name: "NBA 2K2",
+        url: "https://archive.org/search?query=NBA+2K2+Dreamcast",
+      },
     ],
   },
   {
@@ -88,12 +312,30 @@ const consoleLibraries = [
     color: "#F97316",
     accent: "orange",
     games: [
-      "FIFA 23",
-      "WWE 2K22",
-      "Cricket 22",
-      "Mario Kart 8 Deluxe",
-      "The Legend of Zelda: BOTW",
-      "Super Smash Bros. Ultimate",
+      {
+        name: "FIFA 23",
+        url: "https://archive.org/search?query=FIFA+23+Nintendo+Switch",
+      },
+      {
+        name: "WWE 2K22",
+        url: "https://archive.org/search?query=WWE+2K22+Nintendo+Switch",
+      },
+      {
+        name: "Cricket 22",
+        url: "https://archive.org/search?query=Cricket+22+Nintendo+Switch",
+      },
+      {
+        name: "Mario Kart 8 Deluxe",
+        url: "https://archive.org/search?query=Mario+Kart+8+Deluxe+Switch",
+      },
+      {
+        name: "The Legend of Zelda: BOTW",
+        url: "https://archive.org/search?query=Zelda+Breath+of+the+Wild+Switch",
+      },
+      {
+        name: "Super Smash Bros. Ultimate",
+        url: "https://archive.org/search?query=Super+Smash+Bros+Ultimate+Switch",
+      },
     ],
   },
   {
@@ -103,12 +345,30 @@ const consoleLibraries = [
     color: "#A855F7",
     accent: "violet",
     games: [
-      "FIFA 2003",
-      "WWE Day of Reckoning",
-      "Mario Kart: Double Dash!!",
-      "The Legend of Zelda: Wind Waker",
-      "Metroid Prime",
-      "Super Mario Sunshine",
+      {
+        name: "FIFA 2003",
+        url: "https://archive.org/search?query=FIFA+2003+GameCube",
+      },
+      {
+        name: "WWE Day of Reckoning",
+        url: "https://archive.org/search?query=WWE+Day+of+Reckoning+GameCube",
+      },
+      {
+        name: "Mario Kart: Double Dash!!",
+        url: "https://archive.org/search?query=Mario+Kart+Double+Dash+GameCube",
+      },
+      {
+        name: "The Legend of Zelda: Wind Waker",
+        url: "https://archive.org/search?query=Zelda+Wind+Waker+GameCube",
+      },
+      {
+        name: "Metroid Prime",
+        url: "https://archive.org/search?query=Metroid+Prime+GameCube",
+      },
+      {
+        name: "Super Mario Sunshine",
+        url: "https://archive.org/search?query=Super+Mario+Sunshine+GameCube",
+      },
     ],
   },
 ];
@@ -137,7 +397,7 @@ const sportsGames = [
       "FIFA Series (All Consoles)",
       "Pro Evolution Soccer Series",
       "FIFA Street (PS2)",
-      "FIFA 10 (PSP)",
+      "FIFA World Cup Series (PS2/PSP)",
       "FIFA 23 (Switch)",
     ],
     searchQuery: "FIFA football video games",
@@ -148,11 +408,11 @@ const sportsGames = [
     icon: Dumbbell,
     color: "#EF4444",
     games: [
-      "WWE SmackDown! Here Comes the Pain",
-      "WWE SmackDown vs Raw Series",
+      "WWE SmackDown! (PS1)",
+      "WWE SmackDown! 2: Know Your Role (PS1)",
+      "WWE SmackDown! Here Comes the Pain (PS2)",
+      "WWE SmackDown vs Raw Series (PS2/PSP)",
       "WWE Day of Reckoning (GameCube)",
-      "WWE 2K22 (Switch)",
-      "WWF SmackDown! (PS1)",
     ],
     searchQuery: "WWE wrestling video games",
   },
@@ -343,7 +603,7 @@ function HeroSection() {
             </h1>
             <p className="text-muted-foreground text-lg leading-relaxed mb-8 max-w-lg">
               Your ultimate destination for console game libraries, sports games
-              & Android emulators. Explore PS1, PS2, PSP, Sega Dreamcast,
+              &amp; Android emulators. Explore PS1, PS2, PSP, Sega Dreamcast,
               Nintendo Switch, and GameCube collections.
             </p>
             <div className="flex flex-wrap gap-4">
@@ -375,7 +635,7 @@ function HeroSection() {
             <div className="mt-10 flex gap-8">
               {[
                 { value: "6", label: "Console Libraries" },
-                { value: "40+", label: "Game Titles" },
+                { value: "80+", label: "Game Titles" },
                 { value: "5", label: "Emulators" },
               ].map((stat) => (
                 <div key={stat.label}>
@@ -452,6 +712,10 @@ function ConsoleCard({
   lib,
   index,
 }: { lib: (typeof consoleLibraries)[0]; index: number }) {
+  const [expanded, setExpanded] = useState(false);
+  const visibleGames = expanded ? lib.games : lib.games.slice(0, 6);
+  const hasMore = lib.games.length > 6;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -477,36 +741,60 @@ function ConsoleCard({
                 {lib.name}
               </CardTitle>
               <p className="text-xs text-muted-foreground font-display tracking-wide">
-                {lib.fullName}
+                {lib.fullName} &bull; {lib.games.length} games
               </p>
             </div>
           </div>
         </CardHeader>
         <CardContent className="flex flex-col flex-1 gap-4">
-          <ul className="space-y-2 flex-1">
-            {lib.games.map((game) => (
+          <ul className="space-y-1.5 flex-1">
+            {visibleGames.map((game) => (
               <li
-                key={game}
-                className="flex items-center gap-2 text-sm text-muted-foreground group-hover:text-foreground/80 transition-colors"
+                key={game.name}
+                className="flex items-center justify-between gap-2 text-sm text-muted-foreground group-hover:text-foreground/80 transition-colors"
               >
-                <ChevronRight className="w-3 h-3 text-primary flex-shrink-0" />
-                <span>{game}</span>
+                <span className="flex items-center gap-2">
+                  <ChevronRight className="w-3 h-3 text-primary flex-shrink-0" />
+                  <span>{game.name}</span>
+                </span>
+                {game.url && (
+                  <a
+                    href={game.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-shrink-0 text-primary hover:text-primary/80 transition-colors"
+                    title={`Download ${game.name}`}
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                  </a>
+                )}
               </li>
             ))}
           </ul>
+          {hasMore && (
+            <button
+              type="button"
+              onClick={() => setExpanded(!expanded)}
+              className="text-xs text-primary hover:text-primary/80 font-display tracking-wider uppercase transition-colors text-left"
+            >
+              {expanded ? "Show Less" : `+ ${lib.games.length - 6} More Games`}
+            </button>
+          )}
           <Button
             size="sm"
             variant="outline"
             className="w-full border-border hover:border-primary hover:bg-primary/10 hover:text-primary font-display tracking-wider uppercase text-xs mt-auto"
-            onClick={() =>
-              toast.success(
-                `${lib.fullName} library coming soon! Stay tuned for ROM links.`,
-              )
-            }
+            asChild
             data-ocid={`libraries.explore.button.${index + 1}`}
           >
-            <Gamepad2 className="mr-2 w-3 h-3" />
-            Explore Library
+            <a
+              href={`https://archive.org/search?query=${encodeURIComponent(`${lib.fullName} game ISO ROM`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <Gamepad2 className="mr-2 w-3 h-3" />
+              Browse All on Archive.org
+            </a>
           </Button>
         </CardContent>
       </Card>
